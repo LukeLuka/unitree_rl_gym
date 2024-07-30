@@ -98,11 +98,12 @@ class H1_2RoughCfg(LeggedRobotCfg):
             orientation = -0.1
             base_height = -10.0
             dof_acc = -3.5e-9
-            feet_air_time = 1.0
+            feet_air_time = 1.2
             collision = 0.0
             action_rate = -0.001
             torques = 0.0
-            dof_pos_limits = -1.0
+            dof_pos_limits = -5.0
+            stand_still = -1.0
         
         only_positive_rewards = False # if true negative total rewards are clipped at zero (avoids early termination problems)
     

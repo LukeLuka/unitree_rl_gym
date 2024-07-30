@@ -177,6 +177,16 @@ class LeggedRobot(BaseTask):
     def compute_observations(self):
         """ Computes observations
         """
+        # 3 + 3 + 3 + 3 + num_actions + num_actions + num_actions
+        # in h1_2 case: 12 + 21 * 3
+        # for real robot:
+        #   base_lin_vel, from forward kinematic or integrated over time with imu accelerometer
+        #   base_ang_vel, from imu gyroscope
+        #   projected_gravity, from imu quat and accelerometer
+        #   commands, user input
+        #   dof_pos, from joint state
+        #   dof_vel, from joint state
+        #   actions, last frame actions
         self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
                                     self.base_ang_vel  * self.obs_scales.ang_vel,
                                     self.projected_gravity,
@@ -414,6 +424,13 @@ class LeggedRobot(BaseTask):
         """ Initialize torch tensors which will contain simulation states and processed quantities
         """
         # get gym GPU state tensors
+        ''' root state:
+                Position (x, y, z): The first three elements represent the position of the actor's root in the global coordinate frame.
+                Orientation (qx, qy, qz, qw): The next four elements represent the orientation of the actor's root as a quaternion.
+                Linear Velocity (vx, vy, vz): The following three elements represent the linear velocity of the actor's root in the global coordinate frame.
+                Angular Velocity (wx, wy, wz): The last three elements represent the angular velocity of the actor's root in the global coordinate frame.
+        '''
+        
         actor_root_state = self.gym.acquire_actor_root_state_tensor(self.sim)
         dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
         net_contact_forces = self.gym.acquire_net_contact_force_tensor(self.sim)
@@ -449,7 +466,7 @@ class LeggedRobot(BaseTask):
         self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
         self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
-        self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
+        self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13]) # root_states[:,10:13] correspond to imu gyroscope
         self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
       
 
