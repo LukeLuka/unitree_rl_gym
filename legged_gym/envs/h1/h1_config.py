@@ -27,7 +27,7 @@ class H1RoughCfg( LeggedRobotCfg ):
     
     class env(LeggedRobotCfg.env):
         num_observations = 42
-        num_actions = 10
+        num_actions = 11
       
 
     class control( LeggedRobotCfg.control ):
@@ -58,7 +58,7 @@ class H1RoughCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/h1/urdf/h1.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/h1/urdf/h1_torso.urdf'
         name = "h1"
         foot_name = "ankle"
         penalize_contacts_on = ["hip", "knee"]
@@ -75,13 +75,14 @@ class H1RoughCfg( LeggedRobotCfg ):
             lin_vel_z = -2.0
             ang_vel_xy = -1.0
             orientation = -1.0
-            base_height = -100.0
+            base_height = -10.0
             dof_acc = -3.5e-8
-            feet_air_time = 1.0
+            feet_air_time = 15.0
             collision = 0.0
             action_rate = -0.01
             torques = 0.0
             dof_pos_limits = -10.0
+            stand_still = -5.0
 
 class H1RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):

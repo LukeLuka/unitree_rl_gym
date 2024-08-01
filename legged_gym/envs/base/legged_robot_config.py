@@ -96,7 +96,7 @@ class LeggedRobotCfg(BaseConfig):
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
-        max_push_vel_xy = 1.
+        max_push_vel_xy = 2.
 
     class rewards:
         class scales:
