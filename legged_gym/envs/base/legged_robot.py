@@ -19,7 +19,7 @@ from legged_gym.utils.helpers import class_to_dict
 from .legged_robot_config import LeggedRobotCfg
 from datetime import datetime
 
-from legged_gym.utils.forward_kinematics import RobotKinematics
+# from legged_gym.utils.forward_kinematics import RobotKinematics
 
 class LeggedRobot(BaseTask):
     def __init__(self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless):
@@ -49,7 +49,7 @@ class LeggedRobot(BaseTask):
         self._prepare_reward_function()
         self.init_done = True
 
-        self.rbtk = RobotKinematics('resources/robots/h1/urdf/h1_torso.urdf')
+        # self.rbtk = RobotKinematics('resources/robots/h1/urdf/h1_torso.urdf')
 
     def step(self, actions):
         """ Apply actions, simulate, call self.post_physics_step()
@@ -202,8 +202,8 @@ class LeggedRobot(BaseTask):
         #   dof_pos, from joint state
         #   dof_vel, from joint state
         #   actions, last frame actions
-        # self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
-        # self.commands[:, 0] = 1.
+        self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
+        self.commands[:, 0] = 0.
         # directly change structure of obs_buf
         # self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
         #                             self.base_ang_vel  * self.obs_scales.ang_vel,
@@ -213,9 +213,7 @@ class LeggedRobot(BaseTask):
         #                             self.dof_vel * self.obs_scales.dof_vel,
         #                             self.actions
         #                             ),dim=-1)
-        self.obs_buf = torch.cat((  self.base_ang_vel  * self.obs_scales.ang_vel,
-                                    self.projected_gravity,
-                                    self.commands[:, :3] * self.commands_scale,
+        self.obs_buf = torch.cat((  self.commands[:, :3] * self.commands_scale,
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions
@@ -461,10 +459,10 @@ class LeggedRobot(BaseTask):
         # noise_vec[:3] = noise_scales.lin_vel * noise_level * self.obs_scales.lin_vel
         noise_vec[0:3] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[3:6] = noise_scales.gravity * noise_level
-        noise_vec[6:9] = 0. # commands
-        noise_vec[9:9+self.num_actions] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[9+self.num_actions:9+2*self.num_actions] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[9+2*self.num_actions:9+3*self.num_actions] = 0. # previous actions
+        noise_vec[0:3] = 0. # commands
+        noise_vec[3:3+self.num_actions] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[3+self.num_actions:3+2*self.num_actions] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[3+2*self.num_actions:3+3*self.num_actions] = 0. # previous actions
 
         return noise_vec
 

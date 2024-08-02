@@ -96,7 +96,7 @@ class LeggedRobotCfg(BaseConfig):
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
-        max_push_vel_xy = 2.
+        max_push_vel_xy = 1.
 
     class rewards:
         class scales:
@@ -202,7 +202,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 1500 # number of policy updates
+        max_iterations = 3000 # number of policy updates
 
         # logging
         save_interval = 50 # check for potential saves every this many iterations
