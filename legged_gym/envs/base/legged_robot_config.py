@@ -12,7 +12,7 @@ class LeggedRobotCfg(BaseConfig):
         test = False
 
     class terrain:
-        mesh_type = 'plane' # "heightfield" # none, plane, heightfield or trimesh
+        mesh_type = 'trimesh' # "heightfield" # none, plane, heightfield or trimesh
         horizontal_scale = 0.1 # [m]
         vertical_scale = 0.005 # [m]
         border_size = 25 # [m]
@@ -20,12 +20,15 @@ class LeggedRobotCfg(BaseConfig):
         static_friction = 1.0
         dynamic_friction = 1.0
         restitution = 0.
+        terrain_noise_magnitude = 0.1
         # rough terrain only:
+        terrain_smoothness = 0.005
         measure_heights = True
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # 1mx1.6m rectangle (without center line)
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
         selected = False # select a unique terrain type and pass all arguments
         terrain_kwargs = None # Dict of arguments for selected terrain
+        min_init_terrain_level = 0
         max_init_terrain_level = 5 # starting curriculum state
         terrain_length = 8.
         terrain_width = 8.
@@ -35,6 +38,14 @@ class LeggedRobotCfg(BaseConfig):
         terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
         # trimesh only:
         slope_treshold = 0.75 # slopes above this threshold will be corrected to vertical surfaces
+        difficulty_scale = 1.
+        x_init_range = 1.
+        y_init_range = 1.
+        x_init_offset = 0.
+        y_init_offset = 0.
+        teleport_robots = True
+        teleport_thresh = 2.0
+        max_platform_height = 0.2
 
     class commands:
         curriculum = False
@@ -91,12 +102,24 @@ class LeggedRobotCfg(BaseConfig):
 
     class domain_rand:
         randomize_friction = True
-        friction_range = [0.5, 1.25]
+        friction_range = [0.5, 1.5]
         randomize_base_mass = False
         added_mass_range = [-1., 1.]
         push_robots = True
         push_interval_s = 15
         max_push_vel_xy = 1.
+        
+        randomize_restitution = False
+        restitution_range = [0, 1.0]
+        randomize_com_displacement = False
+        # add link masses, increase range, randomize inertia, randomize joint properties
+        com_displacement_range = [-0.15, 0.15]
+        randomize_motor_strength = False
+        motor_strength_range = [0.9, 1.1]
+        randomize_Kp_factor = False
+        Kp_factor_range = [0.8, 1.3]
+        randomize_Kd_factor = False
+        Kd_factor_range = [0.5, 1.5]
 
     class rewards:
         class scales:

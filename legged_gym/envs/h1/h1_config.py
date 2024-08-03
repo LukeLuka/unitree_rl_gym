@@ -25,6 +25,30 @@ class H1RoughCfg( LeggedRobotCfg ):
            'right_elbow_joint' : 0.,
         }
     
+    class joint_pos_limit():
+        pos_limit = {
+            'left_hip_yaw_joint' : [-0.43, 0.43],
+            'left_hip_roll_joint' : [-0.43, 0.43],
+            'left_hip_pitch_joint' : [-3.14, 2.53],
+            'left_knee_joint' : [-0.26, 2.05],
+            'left_ankle_joint' : [-0.87, 0.52],
+            'right_hip_yaw_joint' : [-0.43, 0.43],
+            'right_hip_roll_joint' : [-0.43, 0.43],
+            'right_hip_pitch_joint' : [-3.14, 2.53],
+            'right_knee_joint' : [-0.26, 2.05],
+            'right_ankle_joint' : [-0.87, 0.52],
+            'torso_joint' : [-2.35, 2.35],
+            'left_shoulder_pitch_joint' : [-2.87, 2.87],
+            'left_shoulder_roll_joint' : [-0.34, 3.11],
+            'left_shoulder_yaw_joint' : [-1.3, 4.45],
+            'left_elbow_joint'  : [-1.25, 2.61],
+            'right_shoulder_pitch_joint' : [-2.87, 2.87],
+            'right_shoulder_roll_joint' : [-3.11, 0.34],
+            'right_shoulder_yaw_joint' : [-4.45, 1.3],
+            'right_elbow_joint' : [-1.25, 2.61],
+        }
+        
+    
     class env(LeggedRobotCfg.env):
         num_observations = 33
         num_actions = 10
@@ -70,19 +94,22 @@ class H1RoughCfg( LeggedRobotCfg ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.98
         class scales( LeggedRobotCfg.rewards.scales ):
-            tracking_lin_vel = 1.0
-            tracking_ang_vel = 0.5
+            tracking_lin_vel = 2.0
+            tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -1.0
-            orientation = -1.0
-            base_height = -10.0
+            orientation = -5.0
+            base_height = -30.0
             dof_acc = -3.5e-8
-            feet_air_time = 5.0
-            collision = 0.0
+            feet_air_time = 15.0
+            collision = -0.01
             action_rate = -0.01
-            torques = 0.0
+            torques = -0.0001
             dof_pos_limits = -10.0
+            dof_vel_limits = -10.0
+            torque_limits = -10.0
             stand_still = -10.0
+            feet_contact_forces = -1.0
 
 class H1RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
