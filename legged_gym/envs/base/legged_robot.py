@@ -834,6 +834,30 @@ class LeggedRobot(BaseTask):
                                                                                         self.actor_handles[0],
                                                                                         termination_contact_names[i])
     
+    def _randomize_rigid_body_props(self, env_ids, cfg):
+        if cfg.domain_rand.randomize_base_mass:
+            min_payload, max_payload = cfg.domain_rand.added_mass_range
+            # self.payloads[env_ids] = -1.0
+            self.payloads[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
+                                                requires_grad=False) * (max_payload - min_payload) + min_payload
+        if cfg.domain_rand.randomize_com_displacement:
+            min_com_displacement, max_com_displacement = cfg.domain_rand.com_displacement_range
+            self.com_displacements[env_ids, :] = torch.rand(len(env_ids), 3, dtype=torch.float, device=self.device,
+                                                            requires_grad=False) * (
+                                                         max_com_displacement - min_com_displacement) + min_com_displacement
+
+        if cfg.domain_rand.randomize_friction:
+            min_friction, max_friction = cfg.domain_rand.friction_range
+            self.friction_coeffs[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
+                                                       requires_grad=False) * (
+                                                    max_friction - min_friction) + min_friction
+
+        if cfg.domain_rand.randomize_restitution:
+            min_restitution, max_restitution = cfg.domain_rand.restitution_range
+            self.restitutions[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
+                                                    requires_grad=False) * (
+                                                 max_restitution - min_restitution) + min_restitution
+    
     def _call_train_eval(self, func, env_ids):
 
         env_ids_train = env_ids[env_ids < self.num_train_envs]
@@ -849,7 +873,38 @@ class LeggedRobot(BaseTask):
 
         return ret
     
-    def _get_env_origins(self):
+    def _get_env_origins(self, env_ids, cfg):
+        """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
+            Otherwise create a grid.
+        """
+        if cfg.terrain.mesh_type in ["heightfield", "trimesh"]:
+            self.custom_origins = True
+            # put robots at the origins defined by the terrain
+            max_init_level = cfg.terrain.max_init_terrain_level
+            min_init_level = cfg.terrain.min_init_terrain_level
+            if not cfg.terrain.curriculum: max_init_level = cfg.terrain.num_rows - 1
+            if not cfg.terrain.curriculum: min_init_level = 0
+            self.terrain_levels[env_ids] = torch.randint(min_init_level, max_init_level + 1, (len(env_ids),),
+                                                         device=self.device)
+            self.terrain_types[env_ids] = torch.div(torch.arange(len(env_ids), device=self.device),
+                                                    (len(env_ids) / cfg.terrain.num_cols), rounding_mode='floor').to(
+                torch.long)
+            cfg.terrain.max_terrain_level = cfg.terrain.num_rows
+            cfg.terrain.terrain_origins = torch.from_numpy(cfg.terrain.env_origins).to(self.device).to(torch.float)
+            self.env_origins[env_ids] = cfg.terrain.terrain_origins[
+                self.terrain_levels[env_ids], self.terrain_types[env_ids]]
+        else:
+            self.custom_origins = False
+            # create a grid of robots
+            num_cols = np.floor(np.sqrt(len(env_ids)))
+            num_rows = np.ceil(self.num_envs / num_cols)
+            xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols))
+            spacing = cfg.env.env_spacing
+            self.env_origins[env_ids, 0] = spacing * xx.flatten()[:len(env_ids)]
+            self.env_origins[env_ids, 1] = spacing * yy.flatten()[:len(env_ids)]
+            self.env_origins[env_ids, 2] = 0.
+    
+    def _get_env_origins_(self):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
             Otherwise create a grid.
         """
