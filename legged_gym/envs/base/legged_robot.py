@@ -43,10 +43,11 @@ class LeggedRobot(BaseTask):
         self.debug_viz = False
         self.init_done = False
         self._parse_cfg(self.cfg)
-        super().__init__(self.cfg, sim_params, physics_engine, sim_device, headless)
-
         self.num_train_envs = cfg.env.num_envs
         self.num_envs = cfg.env.num_envs
+        super().__init__(self.cfg, sim_params, physics_engine, sim_device, headless)
+
+
         
         if not self.headless:
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
@@ -207,8 +208,8 @@ class LeggedRobot(BaseTask):
         #   dof_pos, from joint state
         #   dof_vel, from joint state
         #   actions, last frame actions
-        self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
-        self.commands[:, 0] = 0.
+        # self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
+        # self.commands[:, 0] = 0.
         # directly change structure of obs_buf
         # self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
         #                             self.base_ang_vel  * self.obs_scales.ang_vel,
@@ -388,11 +389,15 @@ class LeggedRobot(BaseTask):
         Args:
             env_ids (List[int]): Environemnt ids
         """
-        self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.5, 1.5, (len(env_ids), self.num_dof), device=self.device)
+        self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.7, 1.3, (len(env_ids), self.num_dof), device=self.device)
         self.dof_vel[env_ids] = 0.
-
-        self.dof_state[env_ids, : , 0] = self.dof_pos[env_ids]
-        self.dof_state[env_ids, : , 1] = self.dof_vel[env_ids]
+        
+        # according to the default_dof_pos and the pos limit of each joint, randomize the start pose
+        # for i in range(self.num_dof):
+        #     self.cfg.joint_pos_limit.pos_limit
+        
+        flattened_dof_pos = self.dof_pos.flatten()
+        self.dof_state[..., 0] = flattened_dof_pos
         
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         self.gym.set_dof_state_tensor_indexed(self.sim,

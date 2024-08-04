@@ -68,6 +68,12 @@ class LeggedRobotCfg(BaseConfig):
             "joint_a": 0., 
             "joint_b": 0.}
 
+    class joint_pos_limit:
+        pos_limit = {
+            'left_hip_yaw_joint' : [-0.43, 0.43],
+            'left_hip_roll_joint' : [-0.43, 0.43],
+        }
+    
     class control:
         control_type = 'P' # P: position, V: velocity, T: torques
         # PD Drive parameters:
@@ -225,7 +231,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 24 # per iteration
-        max_iterations = 3000 # number of policy updates
+        max_iterations = 18000 # number of policy updates
 
         # logging
         save_interval = 50 # check for potential saves every this many iterations
