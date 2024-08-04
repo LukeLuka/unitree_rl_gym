@@ -834,6 +834,21 @@ class LeggedRobot(BaseTask):
                                                                                         self.actor_handles[0],
                                                                                         termination_contact_names[i])
     
+    def _call_train_eval(self, func, env_ids):
+
+        env_ids_train = env_ids[env_ids < self.num_train_envs]
+        env_ids_eval = env_ids[env_ids >= self.num_train_envs]
+
+        ret, ret_eval = None, None
+
+        if len(env_ids_train) > 0:
+            ret = func(env_ids_train, self.cfg)
+        if len(env_ids_eval) > 0:
+            ret_eval = func(env_ids_eval, self.eval_cfg)
+            if ret is not None and ret_eval is not None: ret = torch.cat((ret, ret_eval), axis=-1)
+
+        return ret
+    
     def _get_env_origins(self):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
             Otherwise create a grid.
