@@ -390,6 +390,20 @@ class LeggedRobot(BaseTask):
             env_ids (List[int]): Environemnt ids
         """
         self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.7, 1.3, (len(env_ids), self.num_dof), device=self.device)
+        # self.dof_pos[env_ids] = self.default_dof_pos + torch_rand_float(-0.2, 0.2, (len(env_ids), self.num_dof), device=self.device)
+
+        dof_range_tensor = torch_rand_float(-0.01, 0.01, (len(env_ids), self.num_dof), device=self.device)
+        for i, (key, value) in enumerate(self.cfg.joint_pos_limit.pos_limit.items()):
+            if i >= self.num_dof:
+                break
+            # print(f"Key: {key}, Value: {value}")
+            for j in range(len(env_ids)):
+                dof_range_tensor[j][i] = 0.1 * ((value[1] - value[0]) * torch.rand(1, device=self.device) + value[0])
+        self.dof_pos[env_ids] = self.dof_pos[env_ids] + dof_range_tensor
+        # print(f'self.dof_pos[{env_ids}]:\n{self.dof_pos[env_ids]}')
+
+
+
         self.dof_vel[env_ids] = 0.
         
         # according to the default_dof_pos and the pos limit of each joint, randomize the start pose

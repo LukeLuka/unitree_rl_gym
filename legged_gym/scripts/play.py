@@ -42,12 +42,12 @@ def play(args):
     start_time = time.time()
     for i in range(10 * int(env.max_episode_length)):
         actions = policy(obs.detach())
-        print(f'actions.shape:{actions.shape}')
-        print(f'observation.shape:{obs.shape}')
+        # print(f'actions.shape:{actions.shape}')
+        # print(f'observation.shape:{obs.shape}')
         obs, _, rews, dones, infos = env.step(actions.detach())
         time.sleep(0.05)
-        # if i % 250 == 0:
-        #     env._push_robots()
+        if i % 250 == 0:
+            env._push_robots()
         
     end_time = time.time()
     execution_time = end_time - start_time
