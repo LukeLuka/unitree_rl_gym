@@ -783,7 +783,7 @@ class LeggedRobot(BaseTask):
         self.terrain_levels = torch.zeros(self.num_envs, device=self.device, requires_grad=False, dtype=torch.long)
         self.terrain_origins = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
         self.terrain_types = torch.zeros(self.num_envs, device=self.device, requires_grad=False, dtype=torch.long)
-        self._call_train_eval(self._get_env_origins, torch.arange(self.num_envs, device=self.device))
+        self._get_env_origins()
         env_lower = gymapi.Vec3(0., 0., 0.)
         env_upper = gymapi.Vec3(0., 0., 0.)
         self.actor_handles = []
@@ -792,8 +792,7 @@ class LeggedRobot(BaseTask):
 
         self.default_friction = rigid_shape_props_asset[1].friction
         self.default_restitution = rigid_shape_props_asset[1].restitution
-        self._init_custom_buffers__()
-        self._call_train_eval(self._randomize_rigid_body_props, torch.arange(self.num_envs, device=self.device))
+        # self._init_custom_buffers__()
 
         for i in range(self.num_envs):
             # create env instance
@@ -814,6 +813,9 @@ class LeggedRobot(BaseTask):
             self.gym.set_actor_rigid_body_properties(env_handle, anymal_handle, body_props, recomputeInertia=True)
             self.envs.append(env_handle)
             self.actor_handles.append(anymal_handle)
+
+        self._call_train_eval(self._randomize_rigid_body_props, torch.arange(self.num_envs, device=self.device))
+
 
         self.feet_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(feet_names)):
@@ -846,12 +848,6 @@ class LeggedRobot(BaseTask):
                                                             requires_grad=False) * (
                                                          max_com_displacement - min_com_displacement) + min_com_displacement
 
-        if cfg.domain_rand.randomize_friction:
-            min_friction, max_friction = cfg.domain_rand.friction_range
-            self.friction_coeffs[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
-                                                       requires_grad=False) * (
-                                                    max_friction - min_friction) + min_friction
-
         if cfg.domain_rand.randomize_restitution:
             min_restitution, max_restitution = cfg.domain_rand.restitution_range
             self.restitutions[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
@@ -873,7 +869,34 @@ class LeggedRobot(BaseTask):
 
         return ret
     
-    def _get_env_origins(self, env_ids, cfg):
+    def _get_env_origins(self):
+        """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
+            Otherwise create a grid.
+        """
+        if self.cfg.terrain.mesh_type in ["heightfield", "trimesh"]:
+            self.custom_origins = True
+            self.env_origins = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
+            # put robots at the origins defined by the terrain
+            max_init_level = self.cfg.terrain.max_init_terrain_level
+            if not self.cfg.terrain.curriculum: max_init_level = self.cfg.terrain.num_rows - 1
+            self.terrain_levels = torch.randint(0, max_init_level+1, (self.num_envs,), device=self.device)
+            self.terrain_types = torch.div(torch.arange(self.num_envs, device=self.device), (self.num_envs/self.cfg.terrain.num_cols), rounding_mode='floor').to(torch.long)
+            self.max_terrain_level = self.cfg.terrain.num_rows
+            self.terrain_origins = torch.from_numpy(self.terrain.env_origins).to(self.device).to(torch.float)
+            self.env_origins[:] = self.terrain_origins[self.terrain_levels, self.terrain_types]
+        else:
+            self.custom_origins = False
+            self.env_origins = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
+            # create a grid of robots
+            num_cols = np.floor(np.sqrt(self.num_envs))
+            num_rows = np.ceil(self.num_envs / num_cols)
+            xx, yy = torch.meshgrid(torch.arange(num_rows), torch.arange(num_cols))
+            spacing = self.cfg.env.env_spacing
+            self.env_origins[:, 0] = spacing * xx.flatten()[:self.num_envs]
+            self.env_origins[:, 1] = spacing * yy.flatten()[:self.num_envs]
+            self.env_origins[:, 2] = 0.
+    
+    def _get_env_origins__(self, env_ids, cfg):
         """ Sets environment origins. On rough terrain the origins are defined by the terrain platforms.
             Otherwise create a grid.
         """
