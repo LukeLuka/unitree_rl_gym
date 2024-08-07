@@ -108,12 +108,12 @@ class LeggedRobotCfg(BaseConfig):
 
     class domain_rand:
         randomize_friction = True
-        friction_range = [0.5, 1.5]
+        friction_range = [0.2, 1.5]
         randomize_base_mass = False
         added_mass_range = [-1., 1.]
         push_robots = True
-        push_interval_s = 15
-        max_push_vel_xy = 1.
+        push_interval_s = 5
+        max_push_vel_xy = 0.5
         
         randomize_restitution = False
         restitution_range = [0, 1.0]
@@ -122,9 +122,9 @@ class LeggedRobotCfg(BaseConfig):
         com_displacement_range = [-0.15, 0.15]
         randomize_motor_strength = False
         motor_strength_range = [0.9, 1.1]
-        randomize_Kp_factor = False
+        randomize_Kp_factor = True
         Kp_factor_range = [0.8, 1.3]
-        randomize_Kd_factor = False
+        randomize_Kd_factor = True
         Kd_factor_range = [0.5, 1.5]
 
     class rewards:
@@ -181,7 +181,7 @@ class LeggedRobotCfg(BaseConfig):
         lookat = [11., 5, 3.]  # [m]
 
     class sim:
-        dt =  0.005
+        dt = 0.02
         substeps = 1
         gravity = [0., 0. ,-9.81]  # [m/s^2]
         up_axis = 1  # 0 is y, 1 is z
@@ -234,7 +234,7 @@ class LeggedRobotCfgPPO(BaseConfig):
         max_iterations = 18000 # number of policy updates
 
         # logging
-        save_interval = 50 # check for potential saves every this many iterations
+        save_interval = 200 # check for potential saves every this many iterations
         experiment_name = 'test'
         run_name = ''
         # load and resume

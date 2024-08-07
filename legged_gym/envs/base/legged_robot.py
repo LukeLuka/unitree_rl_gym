@@ -116,7 +116,9 @@ class LeggedRobot(BaseTask):
         self.compute_reward()
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         self.reset_idx(env_ids)
-        self.compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
+        # self.compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
+        self.compute_observations_tempral()
+
 
         # # print(f'dof_pos.shape: {self.dof_pos.shape}') # n, 10
         # q_numpy = self.dof_pos.cpu().numpy().squeeze(0)
@@ -223,6 +225,41 @@ class LeggedRobot(BaseTask):
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions
+                                    ),dim=-1)
+        # add perceptive inputs if not blind
+        # add noise if needed
+        if self.add_noise:
+            self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+    
+    def compute_observations_tempral(self):
+        """ Computes observations
+        """
+        # 3 + 3 + 3 + 3 + num_actions + num_actions + num_actions
+        # in h1_2 case: 12 + 21 * 3
+        # for real robot:
+        #   base_lin_vel, from forward kinematic or integrated over time with imu accelerometer
+        #   base_ang_vel, from imu gyroscope
+        #   projected_gravity, from imu quat and accelerometer
+        #   commands, user input
+        #   dof_pos, from joint state
+        #   dof_vel, from joint state
+        #   actions, last frame actions
+        # self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
+        # self.commands[:, 0] = 0.
+        # directly change structure of obs_buf
+        # self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
+        #                             self.base_ang_vel  * self.obs_scales.ang_vel,
+        #                             self.projected_gravity,
+        #                             self.commands[:, :3] * self.commands_scale,
+        #                             (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+        #                             self.dof_vel * self.obs_scales.dof_vel,
+        #                             self.actions
+        #                             ),dim=-1)
+        self.obs_buf = torch.cat((  self.commands[:, :3] * self.commands_scale,
+                                    (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
+                                    self.dof_vel * self.obs_scales.dof_vel,
+                                    self.actions,
+                                    self.last_actions
                                     ),dim=-1)
         # add perceptive inputs if not blind
         # add noise if needed
@@ -1045,7 +1082,7 @@ class LeggedRobot(BaseTask):
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
-        rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+        rew_airTime = torch.sum((self.feet_air_time - 0.25) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime

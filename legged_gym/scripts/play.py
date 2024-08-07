@@ -16,7 +16,7 @@ import time
 def play(args):
     env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
     # override some parameters for testing
-    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 50)
+    env_cfg.env.num_envs = min(env_cfg.env.num_envs, 100)
     env_cfg.terrain.num_rows = 5
     env_cfg.terrain.num_cols = 5
     env_cfg.terrain.curriculum = False
@@ -45,9 +45,9 @@ def play(args):
         # print(f'actions.shape:{actions.shape}')
         # print(f'observation.shape:{obs.shape}')
         obs, _, rews, dones, infos = env.step(actions.detach())
-        time.sleep(0.05)
-        if i % 250 == 0:
-            env._push_robots()
+        # time.sleep(0.02)
+        # if i % 250 == 0:
+        #     env._push_robots()
         
     end_time = time.time()
     execution_time = end_time - start_time
