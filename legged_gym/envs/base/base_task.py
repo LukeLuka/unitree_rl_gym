@@ -104,8 +104,8 @@ class BaseTask(VecEnv):
         self.recording, self.recording_state_change = False, False
         self.max_video_queue_size = 100000
         self._video_queue = deque(maxlen=self.max_video_queue_size)
-        rendering_out = osp.join("/home/male/workspace/unitree/unitree_rl_gym/output", "renderings")
-        states_out = osp.join("/home/male/workspace/unitree/unitree_rl_gym/output", "states")
+        rendering_out = osp.join("/home/humanoid/workspace/unitree/unitree_rl_gym/output", "renderings")
+        states_out = osp.join("/home/humanoid/workspace/unitree/unitree_rl_gym/output", "states")
         os.makedirs(rendering_out, exist_ok=True)
         os.makedirs(states_out, exist_ok=True)
         print(f'rendering_out path:{rendering_out}')

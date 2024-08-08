@@ -244,8 +244,8 @@ class LeggedRobot(BaseTask):
         #   dof_pos, from joint state
         #   dof_vel, from joint state
         #   actions, last frame actions
-        # self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
-        # self.commands[:, 0] = 0.
+        self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False)
+        self.commands[:, 0] = 0.
         # directly change structure of obs_buf
         # self.obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
         #                             self.base_ang_vel  * self.obs_scales.ang_vel,

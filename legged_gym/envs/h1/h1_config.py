@@ -2,28 +2,50 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 class H1RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
-        pos = [0.0, 0.0, 0.9] # x,y,z [m]
-        default_joint_angles = { # = target angles [rad] when action = 0.0
-           'left_hip_yaw_joint' : 0. ,   
-           'left_hip_roll_joint' : 0,               
-           'left_hip_pitch_joint' : -0.4,         
-           'left_knee_joint' : 0.8,       
-           'left_ankle_joint' : -0.4,     
-           'right_hip_yaw_joint' : 0., 
-           'right_hip_roll_joint' : 0, 
-           'right_hip_pitch_joint' : -0.4,                                       
-           'right_knee_joint' : 0.8,                                             
-           'right_ankle_joint' : -0.4,                                     
-           'torso_joint' : 0., 
-           'left_shoulder_pitch_joint' : 0., 
-           'left_shoulder_roll_joint' : 0, 
-           'left_shoulder_yaw_joint' : 0.,
-           'left_elbow_joint'  : 0.,
-           'right_shoulder_pitch_joint' : 0.,
-           'right_shoulder_roll_joint' : 0.0,
-           'right_shoulder_yaw_joint' : 0.,
-           'right_elbow_joint' : 0.,
+        pos = [0.0, 0.0, 0.8] # x,y,z [m]
+        # default_joint_angles = { # = target angles [rad] when action = 0.0
+        #    'left_hip_yaw_joint' : 0. ,   
+        #    'left_hip_roll_joint' : 0,               
+        #    'left_hip_pitch_joint' : -0.4,         
+        #    'left_knee_joint' : 0.8,       
+        #    'left_ankle_joint' : -0.4,     
+        #    'right_hip_yaw_joint' : 0., 
+        #    'right_hip_roll_joint' : 0, 
+        #    'right_hip_pitch_joint' : -0.4,                                       
+        #    'right_knee_joint' : 0.8,                                             
+        #    'right_ankle_joint' : -0.4,                                     
+        #    'torso_joint' : 0., 
+        #    'left_shoulder_pitch_joint' : 0., 
+        #    'left_shoulder_roll_joint' : 0, 
+        #    'left_shoulder_yaw_joint' : 0.,
+        #    'left_elbow_joint'  : 0.,
+        #    'right_shoulder_pitch_joint' : 0.,
+        #    'right_shoulder_roll_joint' : 0.0,
+        #    'right_shoulder_yaw_joint' : 0.,
+        #    'right_elbow_joint' : 0.,
+        # }
+        default_joint_angles = {
+            'left_hip_yaw_joint' : -0.0,
+            'left_hip_roll_joint' : 0.04,
+            'left_hip_pitch_joint' : -0.65,
+            'left_knee_joint' : 1.3,
+            'left_ankle_joint' : -0.65,
+            'right_hip_yaw_joint' : 0.0,
+            'right_hip_roll_joint' : -0.04,
+            'right_hip_pitch_joint' : -0.65,
+            'right_knee_joint' : 1.3,
+            'right_ankle_joint' : -0.65,
+            'torso_joint' : 0., 
+            'left_shoulder_pitch_joint' : 0., 
+            'left_shoulder_roll_joint' : 0, 
+            'left_shoulder_yaw_joint' : 0.,
+            'left_elbow_joint'  : 0.,
+            'right_shoulder_pitch_joint' : 0.,
+            'right_shoulder_roll_joint' : 0.0,
+            'right_shoulder_yaw_joint' : 0.,
+            'right_elbow_joint' : 0.,
         }
+    
     
     class joint_pos_limit():
         pos_limit = {
@@ -92,7 +114,7 @@ class H1RoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.9
+        base_height_target = 0.8
         class scales( LeggedRobotCfg.rewards.scales ):
             # termination = -200
             tracking_lin_vel = 2.0
@@ -100,17 +122,19 @@ class H1RoughCfg( LeggedRobotCfg ):
             lin_vel_z = -2.0
             ang_vel_xy = -1.0
             orientation = -1.0
-            base_height = -100.0
-            dof_acc = -3.5e-8
-            feet_air_time = 3
+            base_height = -10.0
+            dof_acc = -3.5e-6 # todo L2
+            # feet_air_time = 1
             collision = 0
-            action_rate = -0.01
+            action_rate = -0.005
             torques = 0
             dof_pos_limits = -10.0
             # dof_vel_limits = -10.0
             # torque_limits = -0.2
-            stand_still = -1.0
+            stand_still = -30.0
             # feet_contact_forces = -0.1
+            # latency
+            # tau freq test
 
 class H1RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
